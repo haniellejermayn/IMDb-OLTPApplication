@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Database Testing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Distributed Database Testing Interface</h1>
+    
+    <div class="section">
+        <h2>Node Health Status</h2>
+        <table id="healthTable">
+            <thead>
+                <tr>
+                    <th>Node</th>
+                    <th>Status</th>
+                    <th>Record Count</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody id="healthBody">
+                <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+        </table>
+        <button onclick="checkHealth()">Refresh Health Status</button>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: Concurrency Control Tests</h2>
+        
+        <h3>Test Case 1: Concurrent Reads</h3>
+        <label>Isolation Level:</label>
+        <select id="case1Isolation">
+            <option value="READ UNCOMMITTED">READ UNCOMMITTED</option>
+            <option value="READ COMMITTED" selected>READ COMMITTED</option>
+            <option value="REPEATABLE READ">REPEATABLE READ</option>
+            <option value="SERIALIZABLE">SERIALIZABLE</option>
+        </select>
+        <label>Title ID:</label>
+        <input type="text" id="case1Tconst" value="tt0000001">
+        <button onclick="runCase1()">Run Test Case 1</button>
+        
+        <hr>
+        
+        <h3>Test Case 2: Read-Write Concurrent</h3>
+        <label>Isolation Level:</label>
+        <select id="case2Isolation">
+            <option value="READ UNCOMMITTED">READ UNCOMMITTED</option>
+            <option value="READ COMMITTED" selected>READ COMMITTED</option>
+            <option value="REPEATABLE READ">REPEATABLE READ</option>
+            <option value="SERIALIZABLE">SERIALIZABLE</option>
+        </select>
+        <label>Title ID:</label>
+        <input type="text" id="case2Tconst" value="tt0000001">
+        <label>New Runtime:</label>
+        <input type="number" id="case2Runtime" value="120">
+        <button onclick="runCase2()">Run Test Case 2</button>
+        
+        <hr>
+        
+        <h3>Test Case 3: Concurrent Writes</h3>
+        <label>Isolation Level:</label>
+        <select id="case3Isolation">
+            <option value="READ UNCOMMITTED">READ UNCOMMITTED</option>
+            <option value="READ COMMITTED">READ COMMITTED</option>
+            <option value="REPEATABLE READ">REPEATABLE READ</option>
+            <option value="SERIALIZABLE" selected>SERIALIZABLE</option>
+        </select>
+        <label>Title ID:</label>
+        <input type="text" id="case3Tconst" value="tt0000002">
+        <button onclick="runCase3()">Run Test Case 3</button>
+        
+        <hr>
+        
+        <h3>Compare All Isolation Levels</h3>
+        <label>Title ID:</label>
+        <input type="text" id="isolationTconst" value="tt0000001">
+        <label>Test Type:</label>
+        <select id="isolationType">
+            <option value="read">Read Operations</option>
+            <option value="write">Write Operations</option>
+        </select>
+        <button onclick="runIsolationComparison()">Compare Isolation Levels</button>
+    </div>
+    
+    <div class="section">
+        <h2>Step 4: Failure Recovery Tests</h2>
+        
+        <h3>Case 1: Fragment to Central Replication Failure</h3>
+        <p>Simulates fragment node write success but central node replication failure</p>
+        <button onclick="runFailureCase1()">Run Failure Case 1</button>
+        
+        <h3>Case 2: Central Node Recovery</h3>
+        <p>Processes missed transactions after central node comes back online</p>
+        <button onclick="runFailureCase2()">Run Failure Case 2</button>
+        
+        <h3>Case 3: Central to Fragment Replication Failure</h3>
+        <p>Simulates central node write success but fragment node replication failure</p>
+        <button onclick="runFailureCase3()">Run Failure Case 3</button>
+        
+        <h3>Case 4: Fragment Node Recovery</h3>
+        <label>Node to Recover:</label>
+        <select id="case4Node">
+            <option value="node2">node2 (Movies)</option>
+            <option value="node3">node3 (Non-Movies)</option>
+        </select>
+        <button onclick="runFailureCase4()">Run Failure Case 4</button>
+        
+        <hr>
+        
+        <h3>Recovery Status</h3>
+        <button onclick="checkRecoveryStatus()">Check Pending Replications</button>
+    </div>
+    
+    <div class="section">
+        <h2>Additional Operations</h2>
+        
+        <h3>View Transaction Logs</h3>
+        <label>Limit:</label>
+        <input type="number" id="logLimit" value="50">
+        <button onclick="viewLogs()">View Logs</button>
+        
+        <h3>Manual CRUD Operations</h3>
+        <button onclick="showTitles()">List Titles</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="section">
+        <h2>Test Results</h2>
+        <div id="results">
+            <p>No tests run yet. Use the buttons above to start testing.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

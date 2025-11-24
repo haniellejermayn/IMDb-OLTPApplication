@@ -4,6 +4,10 @@ from .recovery_handler import RecoveryHandler
 
 logger = logging.getLogger(__name__)
 
+# TODO: Optional lightweight conflict detection
+# Compare existing DB values with intended update before writing
+# Log a warning if there’s a difference to track potential concurrent updates
+
 class ReplicationManager:
     def __init__(self, db_manager):
         self.db = db_manager

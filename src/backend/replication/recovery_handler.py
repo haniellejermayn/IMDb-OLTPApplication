@@ -4,6 +4,11 @@ from queue import Queue
 
 logger = logging.getLogger(__name__)
 
+# NOTE: failed replications are only queued in-memory for now.
+# also, recovery is currently manual via API call.
+# TODO: if we have time, we can persist the queue to DB and have automatic recovery on node reconnect and/or automatic retries.
+# i left a TODO in the create_schema.sql for this as well.
+
 class RecoveryHandler:
     def __init__(self, db_manager, transaction_logger):
         self.db = db_manager

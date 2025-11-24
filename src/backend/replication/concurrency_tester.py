@@ -4,6 +4,8 @@ import time
 
 logger = logging.getLogger(__name__)
 
+# TODO: make use of ReplicationManager's methods for consistency
+
 class ConcurrencyTester:
     def __init__(self, db_manager, replication_manager):
         self.db = db_manager
@@ -142,7 +144,7 @@ class ConcurrencyTester:
                 'fragment_to_central', 'central_recovery',
                 'central_to_fragment', 'fragment_recovery'
             ]}
-            
+
     def _simulate_case1(self):
         """Case #1: Fragment write succeeds, central replication fails"""
         # This is already handled in insert_title() method

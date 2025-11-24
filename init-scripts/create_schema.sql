@@ -1,4 +1,5 @@
 -- Schema for all nodes (homogeneous)
+-- TODO: possibly add a failed_transactions for recovery
 CREATE DATABASE IF NOT EXISTS imdb_distributed;
 USE imdb_distributed;
 

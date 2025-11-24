@@ -1,0 +1,4 @@
+# Raw IMDB datasets
+data/*.tsv
+data/*.tsv.gz
+data/*.csv

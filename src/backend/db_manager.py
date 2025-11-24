@@ -15,7 +15,6 @@ class DatabaseManager:
         self.user = 'root'
         self.password = 'password123'
         
-        # Wait for nodes to be ready on startup
         self._wait_for_nodes()
     
     def _wait_for_nodes(self, max_retries=30, delay=2):
@@ -106,12 +105,73 @@ class DatabaseManager:
         return status
     
     def get_titles(self, page=1, limit=20, title_type=None):
-        """Get titles with pagination"""
+        """Get titles with pagination and automatic fallback"""
         offset = (page - 1) * limit
         conn = self.get_connection('node1')
         
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                
+                if title_type:
+                    query = """
+                        SELECT * FROM titles 
+                        WHERE title_type = %s 
+                        ORDER BY start_year DESC 
+                        LIMIT %s OFFSET %s
+                    """
+                    cursor.execute(query, (title_type, limit, offset))
+                else:
+                    query = """
+                        SELECT * FROM titles 
+                        ORDER BY start_year DESC 
+                        LIMIT %s OFFSET %s
+                    """
+                    cursor.execute(query, (limit, offset))
+                
+                titles = cursor.fetchall()
+                
+                # Get total count
+                cursor.execute("SELECT COUNT(*) as total FROM titles" + 
+                            (" WHERE title_type = %s" if title_type else ""),
+                            (title_type,) if title_type else ())
+                total = cursor.fetchone()['total']
+                
+                return {
+                    'data': titles,
+                    'total': total,
+                    'page': page,
+                    'limit': limit,
+                    'source': 'node1'
+                }
+            except Error as e:
+                logger.warning(f"Error fetching titles from node1: {e}")
+            finally:
+                conn.close()
+        
+        # fallback
+        logger.info(f"Node1 unavailable, using fragment nodes as fallback")
+        
+        if title_type == 'movie':
+            return self._get_titles_from_node('node2', page, limit, title_type)
+        elif title_type:
+            return self._get_titles_from_node('node3', page, limit, title_type)
+        else:
+            return self._combine_fragment_titles(page, limit)
+
+    def _get_titles_from_node(self, node_name, page, limit, title_type=None):
+        """Helper: Get titles from a specific node"""
+        offset = (page - 1) * limit
+        conn = self.get_connection(node_name)
+        
         if not conn:
-            return {'error': 'Node 1 unavailable', 'data': []}
+            return {
+                'error': f'{node_name} unavailable',
+                'data': [],
+                'total': 0,
+                'page': page,
+                'limit': limit
+            }
         
         try:
             cursor = conn.cursor(dictionary=True)
@@ -134,41 +194,118 @@ class DatabaseManager:
             
             titles = cursor.fetchall()
             
-            # Get total count
             cursor.execute("SELECT COUNT(*) as total FROM titles" + 
-                         (" WHERE title_type = %s" if title_type else ""),
-                         (title_type,) if title_type else ())
+                        (" WHERE title_type = %s" if title_type else ""),
+                        (title_type,) if title_type else ())
             total = cursor.fetchone()['total']
             
             return {
                 'data': titles,
                 'total': total,
                 'page': page,
-                'limit': limit
+                'limit': limit,
+                'source': node_name
             }
         except Error as e:
-            logger.error(f"Error fetching titles: {e}")
-            return {'error': str(e), 'data': []}
+            logger.error(f"Error fetching titles from {node_name}: {e}")
+            return {
+                'error': str(e),
+                'data': [],
+                'total': 0,
+                'page': page,
+                'limit': limit
+            }
         finally:
             conn.close()
+
+    def _combine_fragment_titles(self, page, limit):
+        """Helper: Combine titles from both fragment nodes"""
+        offset = (page - 1) * limit
+        
+        all_titles = []
+        total_count = 0
+        
+        node2_conn = self.get_connection('node2')
+        if node2_conn:
+            try:
+                cursor = node2_conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM titles ORDER BY start_year DESC")
+                all_titles.extend(cursor.fetchall())
+                cursor.execute("SELECT COUNT(*) as count FROM titles")
+                total_count += cursor.fetchone()['count']
+            except Error as e:
+                logger.warning(f"Error fetching from node2: {e}")
+            finally:
+                node2_conn.close()
+        
+        node3_conn = self.get_connection('node3')
+        if node3_conn:
+            try:
+                cursor = node3_conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM titles ORDER BY start_year DESC")
+                all_titles.extend(cursor.fetchall())
+                cursor.execute("SELECT COUNT(*) as count FROM titles")
+                total_count += cursor.fetchone()['count']
+            except Error as e:
+                logger.warning(f"Error fetching from node3: {e}")
+            finally:
+                node3_conn.close()
+        
+        if not all_titles:
+            return {
+                'error': 'All nodes unavailable',
+                'data': [],
+                'total': 0,
+                'page': page,
+                'limit': limit
+            }
+        
+        all_titles.sort(key=lambda x: x.get('start_year') or 0, reverse=True)
+        paginated_titles = all_titles[offset:offset + limit]
+        
+        return {
+            'data': paginated_titles,
+            'total': total_count,
+            'page': page,
+            'limit': limit,
+            'source': 'node2+node3 (combined)'
+        }
     
     def get_title_by_id(self, tconst):
-        """Get single title by ID"""
+        """Get single title by ID with automatic fallback"""
         conn = self.get_connection('node1')
         
-        if not conn:
-            return {'error': 'Node 1 unavailable'}
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM titles WHERE tconst = %s", (tconst,))
+                title = cursor.fetchone()
+                if title:
+                    return title
+            except Error as e:
+                logger.warning(f"Error reading from node1: {e}")
+            finally:
+                conn.close()
         
-        try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM titles WHERE tconst = %s", (tconst,))
-            title = cursor.fetchone()
-            return title if title else {'error': 'Title not found'}
-        except Error as e:
-            logger.error(f"Error fetching title: {e}")
-            return {'error': str(e)}
-        finally:
-            conn.close()
+        # fallback
+        logger.info(f"Node1 unavailable, trying fragment nodes for {tconst}")
+        
+        for node_name in ['node2', 'node3']:
+            conn = self.get_connection(node_name)
+            if conn:
+                try:
+                    cursor = conn.cursor(dictionary=True)
+                    cursor.execute("SELECT * FROM titles WHERE tconst = %s", (tconst,))
+                    title = cursor.fetchone()
+                    if title:
+                        logger.info(f"Found {tconst} on {node_name} (fallback)")
+                        return title
+                except Error as e:
+                    logger.warning(f"Error reading from {node_name}: {e}")
+                finally:
+                    conn.close()
+        
+        return {'error': 'Title not found in any node'}
     
     def execute_query(self, node_name, query, params=None, isolation_level='READ COMMITTED'):
         """Execute query on specific node"""

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_manager import DatabaseManager
-from replication_manager import ReplicationManager
+from replication.replication_manager import ReplicationManager
 import logging
 
 app = Flask(__name__)

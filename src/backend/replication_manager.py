@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class ReplicationManager:
     def __init__(self, db_manager):
         self.db = db_manager
-        self.failed_transactions_queue = Queue()  # For recovery
+        self.failed_transactions_queue = Queue() # queue for failed replications
         
     def log_transaction(self, node_id, operation, tconst, status, error_message=None):
         """Log transaction to transaction_log table"""
@@ -27,7 +27,7 @@ class ReplicationManager:
         tconst = data.get('tconst')
         title_type = data.get('title_type')
         
-        # Determine target nodes based on title_type
+        # node2 if movie, node3 if non-movie
         target_node = 'node2' if title_type == 'movie' else 'node3'
         
         query = """
@@ -45,15 +45,15 @@ class ReplicationManager:
         
         results = {}
         
-        # Strategy: Fragment node first, then central (master-slave approach)
-        # Insert to fragment node (Node 2 or 3) first
+        # master-slave approach: fragment first then central
+        # insert to fragment
         result_frag = self.db.execute_query(target_node, query, params)
         results[target_node] = result_frag
         
         if result_frag['success']:
             self.log_transaction(target_node, 'INSERT', tconst, 'SUCCESS', None)
             
-            # Replicate to Node 1 (central)
+            # replicate to central
             result1 = self.db.execute_query('node1', query, params)
             results['node1'] = result1
             
@@ -75,7 +75,6 @@ class ReplicationManager:
     
     def update_title(self, tconst, data, isolation_level='READ COMMITTED'):
         """Update title with replication"""
-        # First, determine which fragment node has this record
         title = self.db.get_title_by_id(tconst)
         
         if 'error' in title:
@@ -84,7 +83,7 @@ class ReplicationManager:
         title_type = title['title_type']
         target_node = 'node2' if title_type == 'movie' else 'node3'
         
-        # Build update query
+        # update query
         set_clauses = []
         params = []
         
@@ -99,14 +98,14 @@ class ReplicationManager:
         
         results = {}
         
-        # Update Node 1 first (as master)
+        # update central first (node1)
         result1 = self.db.execute_query('node1', query, params, isolation_level)
         results['node1'] = result1
         
         if result1['success']:
             self.log_transaction('node1', 'UPDATE', tconst, 'SUCCESS', None)
             
-            # Replicate to fragment node
+            # replicate to fragment
             result_frag = self.db.execute_query(target_node, query, params, isolation_level)
             results[target_node] = result_frag
             
@@ -128,7 +127,6 @@ class ReplicationManager:
     
     def delete_title(self, tconst):
         """Delete title with replication"""
-        # Get title info first
         title = self.db.get_title_by_id(tconst)
         
         if 'error' in title:
@@ -141,14 +139,14 @@ class ReplicationManager:
         
         results = {}
         
-        # Delete from Node 1 first
+        # delete from central first (node1)
         result1 = self.db.execute_query('node1', query, (tconst,))
         results['node1'] = result1
         
         if result1['success']:
             self.log_transaction('node1', 'DELETE', tconst, 'SUCCESS', None)
             
-            # Replicate deletion to fragment node
+            # replicate deletion to fragment
             result_frag = self.db.execute_query(target_node, query, (tconst,))
             results[target_node] = result_frag
             
@@ -188,12 +186,12 @@ class ReplicationManager:
         
         temp_queue = Queue()
         
-        # Process all items in queue
+        # process all items in queue
         while not self.failed_transactions_queue.empty():
             transaction = self.failed_transactions_queue.get()
             
             if transaction['node_name'] == node_name:
-                # Try to replay this transaction
+                # try to replay this transaction
                 result = self.db.execute_query(
                     node_name,
                     transaction['query'],
@@ -212,12 +210,12 @@ class ReplicationManager:
                     logger.info(f"✓ Recovered {transaction['operation']} for {transaction['tconst']}")
                 else:
                     failed += 1
-                    temp_queue.put(transaction)  # Re-queue if still failing
+                    temp_queue.put(transaction)  # re-queue if still failing
                     logger.warning(f"✗ Failed to recover {transaction['operation']} for {transaction['tconst']}")
             else:
-                temp_queue.put(transaction)  # Keep transactions for other nodes
+                temp_queue.put(transaction)  # keep transactions for other nodes
         
-        # Restore unprocessed transactions back to main queue
+        # restore unprocessed transactions back to main queue
         while not temp_queue.empty():
             self.failed_transactions_queue.put(temp_queue.get())
         
@@ -263,17 +261,17 @@ class ReplicationManager:
                 with lock:
                     results[node_name] = {'success': False, 'error': 'Connection failed'}
         
-        # Start concurrent reads
+        # start concurrent reads
         for node in ['node1', 'node2', 'node3']:
             t = threading.Thread(target=read_from_node, args=(node,))
             threads.append(t)
             t.start()
         
-        # Wait for all reads to complete
+        # wait for all reads to complete
         for t in threads:
             t.join()
         
-        # Check consistency
+        # check consistency
         data_values = [r['data'] for r in results.values() if r.get('success') and r.get('data')]
         consistent = len(set(str(d) for d in data_values)) <= 1 if data_values else True
         
@@ -313,13 +311,13 @@ class ReplicationManager:
                 with lock:
                     results[tconst] = {'success': False, 'error': str(e)}
         
-        # Start concurrent writes
+        # start concurrent writes
         for update in updates:
             t = threading.Thread(target=write_to_nodes, args=(update,))
             threads.append(t)
             t.start()
         
-        # Wait for all writes to complete
+        # wait for all writes to complete
         for t in threads:
             t.join()
         

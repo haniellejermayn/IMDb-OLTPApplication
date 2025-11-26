@@ -83,7 +83,7 @@ class ConcurrencyTester:
             
             try:
                 start_time = time.time()
-                result = self.update_title(tconst, new_data, isolation_level)
+                result = self.replication_manager.update_title(tconst, new_data, isolation_level)
                 end_time = time.time()
                 
                 with lock:
@@ -128,7 +128,7 @@ class ConcurrencyTester:
         
         elif scenario == 'central_recovery':
             # Case #2: Central node recovers and catches up
-            return self.recover_node('node1')
+            return self.replication_manager.recover_node('node1')
         
         elif scenario == 'central_to_fragment':
             # Case #3: Update on central succeeds, replication to fragment fails
@@ -137,7 +137,7 @@ class ConcurrencyTester:
         elif scenario == 'fragment_recovery':
             # Case #4: Fragment node recovers
             node = 'node2'  # or 'node3'
-            return self.recover_node(node)
+            return self.replication_manager.recover_node(node)
         
         else:
             return {'error': 'Unknown scenario', 'valid_scenarios': [
@@ -146,22 +146,17 @@ class ConcurrencyTester:
             ]}
 
     def _simulate_case1(self):
-        """Case #1: Fragment write succeeds, central replication fails"""
-        # This is already handled in insert_title() method
-        # When central node is down, transaction gets queued
         return {
             'scenario': 'Case #1',
-            'description': 'Fragment write succeeds, but central replication fails',
-            'behavior': 'Transaction queued for recovery when central node comes back online',
-            'queue_size': self.failed_transactions_queue.qsize()
+            'description': 'Central write succeeds, but fragment replication fails',
+            'behavior': 'Transaction queued for recovery',
+            'queue_size': self.replication_manager.recovery_handler.get_pending_count()  # ✅ Correct
         }
     
     def _simulate_case3(self):
-        """Case #3: Central write succeeds, fragment replication fails"""
-        # This is already handled in update_title() method
         return {
             'scenario': 'Case #3',
             'description': 'Central write succeeds, but fragment replication fails',
-            'behavior': 'Transaction queued for recovery when fragment node comes back online',
-            'queue_size': self.failed_transactions_queue.qsize()
+            'behavior': 'Transaction queued for recovery',
+            'queue_size': self.replication_manager.recovery_handler.get_pending_count()  # ✅ Correct
         }

@@ -21,7 +21,11 @@ services:
       retries: 5
 
   backend:
-    build: ../../src/backend
+    build: 
+      context: ../../src/backend
+      dockerfile: Dockerfile
+      security_opt:
+        - apparmor:unconfined
     container_name: distributed-backend
     restart: always
     ports:

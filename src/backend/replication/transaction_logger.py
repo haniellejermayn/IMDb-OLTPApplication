@@ -1,28 +1,125 @@
 import logging
+import json
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-
-# TODO: give each node its own transaction log table for better tracking
-# TODO: allow to fetch logs from a specific node
-# TODO: add a cleanup mechanism for old logs
 
 class TransactionLogger:
     def __init__(self, db_manager):
         self.db = db_manager
     
-    def log_transaction(self, node_id, operation_type, record_id, 
-                       status='SUCCESS', error_msg=None, table_name='titles'):
-        """Log transaction to database"""
-        query = """
-            INSERT INTO transaction_log 
-            (transaction_id, node_id, operation_type, table_name, record_id, status, error_message)
-            VALUES (UUID(), %s, %s, %s, %s, %s, %s)
+    def log_replication(self, source_node, target_node, operation_type, 
+                       record_id, query, params, status='PENDING', error_msg=None):
         """
-        result = self.db.execute_query(
-            'node1',
+        Args:
+            source_node: node where write happened (node2/node3)
+            target_node: node where replica should go (node1)
+            operation_type: INSERT/UPDATE/DELETE
+            record_id: tconst value
+            query: SQL query text
+            params: Query parameters
+            status: SUCCESS/FAILED/PENDING
+            error_msg: Error message if failed
+        """
+        transaction_id = self._generate_transaction_id()
+        
+        log_query = """
+            INSERT INTO transaction_log 
+            (transaction_id, source_node, target_node, operation_type, 
+             table_name, record_id, status, query_text, query_params, error_message)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        
+        # convert params tuple to JSON
+        params_json = json.dumps(list(params)) if params else None
+        
+        log_params = (
+            transaction_id,
+            source_node,
+            target_node,
+            operation_type,
+            'titles',
+            record_id,
+            status,
             query,
-            (node_id, operation_type, table_name, record_id, status, error_msg)
+            params_json,
+            error_msg
         )
+        
+        # log to source node's transaction log
+        result = self.db.execute_query(source_node, log_query, log_params)
+        
         if not result['success']:
-            logger.error(f"Failed to log transaction: {result.get('error')}")
+            logger.error(
+                f"CRITICAL: Failed to log transaction on {source_node}! "
+                f"Operation {operation_type} on {record_id} may be lost. "
+                f"Error: {result.get('error')}"
+            )
+            return None
+        
+        logger.info(
+            f"Logged {operation_type} for {record_id}: "
+            f"{source_node} → {target_node} (status: {status})"
+        )
+        return transaction_id
+    
+    def update_log_status(self, node, transaction_id, status, error_msg=None):
+        """Update status of a logged transaction"""
+        query = """
+            UPDATE transaction_log 
+            SET status = %s, 
+                error_message = %s,
+                completed_at = NOW(),
+                last_retry_at = NOW()
+            WHERE transaction_id = %s
+        """
+        
+        result = self.db.execute_query(node, query, (status, error_msg, transaction_id))
+        
+        if result['success']:
+            logger.info(f"✓ Updated transaction {transaction_id} to {status}")
+        else:
+            logger.error(f"✗ Failed to update transaction {transaction_id}")
+        
+        return result
+    
+    def increment_retry_count(self, node, transaction_id):
+        """Increment retry counter"""
+        query = """
+            UPDATE transaction_log 
+            SET retry_count = retry_count + 1,
+                last_retry_at = NOW()
+            WHERE transaction_id = %s
+        """
+        return self.db.execute_query(node, query, (transaction_id,))
+    
+    def get_pending_replications(self, source_node):
+        """Get all pending replications from a source node"""
+        query = """
+            SELECT * FROM transaction_log
+            WHERE source_node = %s
+              AND status = 'PENDING'
+              AND retry_count < max_retries
+            ORDER BY created_at ASC
+        """
+        
+        conn = self.db.get_connection(source_node)
+        if not conn:
+            return []
+        
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(query, (source_node,))
+            results = cursor.fetchall()
+            return results
+        except Exception as e:
+            logger.error(f"Error fetching pending replications from {source_node}: {e}")
+            return []
+        finally:
+            conn.close()
+    
+    # avoid duplicate IDs by using UUIDs
+    def _generate_transaction_id(self):
+        """Generate unique transaction ID"""
+        import uuid
+        return str(uuid.uuid4())

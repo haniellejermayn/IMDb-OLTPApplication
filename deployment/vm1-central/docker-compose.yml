@@ -21,11 +21,7 @@ services:
       retries: 5
 
   backend:
-    build: 
-      context: ../../src/backend
-      dockerfile: Dockerfile
-      security_opt:
-        - apparmor:unconfined
+    build: ../../src/backend
     container_name: distributed-backend
     restart: always
     ports:
@@ -43,6 +39,7 @@ services:
       - NODE3_PORT=3306
       - DB_USER=root
       - DB_PASSWORD=password123
+    priviledged: true
 
 volumes:
   node1_data:

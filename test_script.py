@@ -4,7 +4,7 @@ MCO2 Test Script - Distributed Database Testing
 Runs all concurrency and recovery test cases 3 times each and logs results.
 
 Usage:
-    python test_script.py [--base-url http://localhost:5000]
+    python test_script.py [--base-url http://localhost:80]
 """
 
 import requests
@@ -14,7 +14,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:80"
 NUM_RUNS = 3
 TEST_TCONST = "tt0000001"  # Make sure this exists in your database
 
@@ -141,6 +141,67 @@ def run_test(test_name, test_func, runs=NUM_RUNS):
         "runs": test_results,
         "summary": summary
     }
+
+def setup_test_data():
+    """Ensure test record exists before running tests"""
+    log("Setting up test data...")
+    
+    # Check if test record exists
+    response = make_request("GET", f"/title/{TEST_TCONST}")
+    
+    if "error" in response.get("data", {}):
+        log(f"Test record {TEST_TCONST} not found, creating it...", "WARN")
+        
+        # Create test record
+        create_response = make_request("POST", "/title", {
+            "tconst": TEST_TCONST,
+            "title_type": "movie",
+            "primary_title": "Test Movie",
+            "start_year": 2000,
+            "runtime_minutes": 120,
+            "genres": "Drama"
+        })
+        
+        if create_response.get("data", {}).get("success"):
+            log(f"✓ Created test record {TEST_TCONST}")
+            time.sleep(2)  # Wait for replication
+        else:
+            log(f"✗ Failed to create test record!", "ERROR")
+            return False
+    else:
+        log(f"✓ Test record {TEST_TCONST} exists")
+        
+        # Reset to known state
+        reset_response = make_request("PUT", f"/title/{TEST_TCONST}", {
+            "runtime_minutes": 120,
+            "genres": "Drama"
+        })
+        
+        if reset_response.get("data", {}).get("success"):
+            log(f"✓ Reset test record to baseline")
+            time.sleep(2)  # Wait for replication
+        else:
+            log(f"⚠ Could not reset test record", "WARN")
+    
+    return True
+
+def wait_for_replication():
+    """Wait for pending replications to complete"""
+    log("Waiting for replication to complete...")
+    
+    for i in range(10):  # Max 10 seconds
+        status = check_recovery_status()
+        pending = status.get("total_pending", 0)
+        
+        if pending == 0:
+            log("  ✓ All replications complete")
+            return True
+        
+        log(f"  ⟳ Waiting... ({pending} pending)")
+        time.sleep(1)
+    
+    log("  ⚠ Timeout waiting for replication", "WARN")
+    return False
 
 
 # ==================== CONCURRENCY TEST CASES ====================
@@ -353,6 +414,10 @@ def main():
     if not check_health():
         log("Not all nodes are healthy. Some tests may fail.", "WARN")
     
+    if not setup_test_data():
+        log("Failed to setup test data. Aborting.", "ERROR")
+        return 1
+    
     # ===== CONCURRENCY TESTS (Step 3) =====
     log("\n" + "=" * 60)
     log("STEP 3: CONCURRENCY CONTROL TESTS")
@@ -362,16 +427,22 @@ def main():
         "Case 1: Concurrent Reads",
         test_case1_concurrent_reads
     )
+
+    wait_for_replication()
     
     results["concurrency_tests"]["case2_read_write_conflict"] = run_test(
         "Case 2: Read-Write Conflict",
         test_case2_read_write_conflict
     )
+
+    wait_for_replication()
     
     results["concurrency_tests"]["case3_concurrent_writes"] = run_test(
         "Case 3: Concurrent Writes",
         test_case3_concurrent_writes
     )
+
+    wait_for_replication()
     
     # ===== RECOVERY TESTS (Step 4) =====
     log("\n" + "=" * 60)
@@ -382,21 +453,29 @@ def main():
         "Case 1: Fragment → Central Failure Info",
         test_recovery_case1_fragment_to_central
     )
+
+    wait_for_replication()
     
     results["recovery_tests"]["case2_central_recovery"] = run_test(
         "Case 2: Central Node Recovery",
         test_recovery_case2_central_recovery
     )
+
+    wait_for_replication()
     
     results["recovery_tests"]["case3_central_to_fragment"] = run_test(
         "Case 3: Central → Fragment Failure Info",
         test_recovery_case3_central_to_fragment
     )
+
+    wait_for_replication()
     
     results["recovery_tests"]["case4_fragment_recovery"] = run_test(
         "Case 4: Fragment Node Recovery",
         test_recovery_case4_fragment_recovery
     )
+
+    wait_for_replication()
     
     # Recovery status check
     log("\nChecking recovery status...")

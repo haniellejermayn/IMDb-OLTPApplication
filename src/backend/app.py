@@ -60,7 +60,7 @@ def search_titles():
     year_from = request.args.get('year_from', None, type=int)
     year_to = request.args.get('year_to', None, type=int)
     title_type = request.args.get('type', None)
-    genre = request.args.get('genre', None)
+    genres = request.args.getlist('genre')
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 20))
     
@@ -69,7 +69,7 @@ def search_titles():
         year_from=year_from,
         year_to=year_to,
         title_type=title_type,
-        genre=genre,
+        genres=genres,
         page=page,
         limit=limit
     )

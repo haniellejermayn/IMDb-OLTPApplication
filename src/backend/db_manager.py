@@ -306,7 +306,7 @@ class DatabaseManager:
         }
     
     def search_titles(self, search_term=None, year_from=None, year_to=None, 
-                      title_type=None, genre=None, page=1, limit=20):
+                      title_type=None, genres=None, page=1, limit=20):
         """Search titles with filters"""
         offset = (page - 1) * limit
         
@@ -330,9 +330,12 @@ class DatabaseManager:
             conditions.append("title_type = %s")
             params.append(title_type)
         
-        if genre:
-            conditions.append("genres LIKE %s")
-            params.append(f"%{genre}%")
+        if genres:
+            genre_conditions = []
+            for genre in genres:
+                genre_conditions.append("genres LIKE %s")
+                params.append(f"%{genre}%")
+            conditions.append("(" + " OR ".join(genre_conditions) + ")")
         
         where_clause = " AND ".join(conditions) if conditions else "1=1"
         
@@ -367,7 +370,7 @@ class DatabaseManager:
                         'year_from': year_from,
                         'year_to': year_to,
                         'title_type': title_type,
-                        'genre': genre
+                        'genres': genres
                     }
                 }
             except Error as e:
@@ -512,23 +515,32 @@ class DatabaseManager:
                 conn.close()
     
     def get_transaction_logs(self, limit=50):
-        """Get recent transaction logs"""
-        conn = self.get_connection('node1')
+        """Get recent transaction logs from ALL nodes"""
+        all_logs = []
         
-        if not conn:
-            return {'error': 'Node 1 unavailable', 'logs': []}
+        for node_name in ['node1', 'node2', 'node3']:
+            conn = self.get_connection(node_name)
+            
+            if not conn:
+                logger.warning(f"Cannot fetch logs from {node_name} - node offline")
+                continue
+            
+            try:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("""
+                    SELECT *, %s as log_source FROM transaction_log 
+                    ORDER BY created_at DESC 
+                    LIMIT %s
+                """, (node_name, limit))
+                logs = cursor.fetchall()
+                all_logs.extend(logs)
+            except Error as e:
+                logger.error(f"Error fetching logs from {node_name}: {e}")
+            finally:
+                conn.close()
         
-        try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT * FROM transaction_log 
-                ORDER BY created_at DESC 
-                LIMIT %s
-            """, (limit,))
-            logs = cursor.fetchall()
-            return {'logs': logs}
-        except Error as e:
-            logger.error(f"Error fetching logs: {e}")
-            return {'error': str(e), 'logs': []}
-        finally:
-            conn.close()
+        # Sort by created_at descending
+        all_logs.sort(key=lambda x: x.get('created_at'), reverse=True)
+        
+        # Return top N
+        return {'logs': all_logs[:limit]}

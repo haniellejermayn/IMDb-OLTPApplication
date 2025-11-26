@@ -114,49 +114,59 @@ class ConcurrencyTester:
     
     def simulate_failure(self, scenario):
         """
-        Simulate node failure scenarios
-        
-        Scenarios:
-        - 'fragment_to_central': Simulate Case #1
-        - 'central_recovery': Simulate Case #2
-        - 'central_to_fragment': Simulate Case #3
-        - 'fragment_recovery': Simulate Case #4
+        Guide for simulating failure scenarios
+        These require manual intervention (stopping containers)
         """
         if scenario == 'fragment_to_central':
-            # Case #1: Insert to fragment succeeds, replication to central fails
-            return self._simulate_case1()
+            return {
+                'scenario': 'Case #1: Central node failure during replication',
+                'steps': [
+                    '1. Stop node1 container: docker stop node1-central',
+                    '2. Insert a new title via POST /title',
+                    '3. Check pending queue: GET /recovery/status',
+                    '4. Restart node1: docker start node1-central',
+                    '5. Trigger recovery: POST /test/failure/central-recovery'
+                ],
+                'expected': 'Insert succeeds on fragment, queued for central',
+                'current_queue_size': self.replication_manager.recovery_handler.get_pending_count()
+            }
         
         elif scenario == 'central_recovery':
-            # Case #2: Central node recovers and catches up
-            return self.replication_manager.recover_node('node1')
+            return {
+                'scenario': 'Case #2: Central node recovery',
+                'action': 'Triggering recovery for node1...',
+                'result': self.replication_manager.recover_node('node1')
+            }
         
         elif scenario == 'central_to_fragment':
-            # Case #3: Update on central succeeds, replication to fragment fails
-            return self._simulate_case3()
+            return {
+                'scenario': 'Case #3: Fragment node failure during replication',
+                'steps': [
+                    '1. Stop node2 container: docker stop node2-movies',
+                    '2. Update a movie via PUT /title/tt0000001',
+                    '3. Check pending queue: GET /recovery/status',
+                    '4. Restart node2: docker start node2-movies',
+                    '5. Trigger recovery: POST /test/failure/fragment-recovery with {"node": "node2"}'
+                ],
+                'expected': 'Update succeeds on central, queued for fragment',
+                'current_queue_size': self.replication_manager.recovery_handler.get_pending_count()
+            }
         
         elif scenario == 'fragment_recovery':
-            # Case #4: Fragment node recovers
-            node = 'node2'  # or 'node3'
-            return self.replication_manager.recover_node(node)
+            node = request.json.get('node', 'node2') if hasattr(self, 'request') else 'node2'
+            return {
+                'scenario': f'Case #4: Fragment node ({node}) recovery',
+                'action': f'Triggering recovery for {node}...',
+                'result': self.replication_manager.recover_node(node)
+            }
         
         else:
-            return {'error': 'Unknown scenario', 'valid_scenarios': [
-                'fragment_to_central', 'central_recovery',
-                'central_to_fragment', 'fragment_recovery'
-            ]}
-
-    def _simulate_case1(self):
-        return {
-            'scenario': 'Case #1',
-            'description': 'Central write succeeds, but fragment replication fails',
-            'behavior': 'Transaction queued for recovery',
-            'queue_size': self.replication_manager.recovery_handler.get_pending_count()  # ✅ Correct
-        }
-    
-    def _simulate_case3(self):
-        return {
-            'scenario': 'Case #3',
-            'description': 'Central write succeeds, but fragment replication fails',
-            'behavior': 'Transaction queued for recovery',
-            'queue_size': self.replication_manager.recovery_handler.get_pending_count()  # ✅ Correct
-        }
+            return {
+                'error': 'Unknown scenario',
+                'valid_scenarios': [
+                    'fragment_to_central',
+                    'central_recovery',
+                    'central_to_fragment',
+                    'fragment_recovery'
+                ]
+            }

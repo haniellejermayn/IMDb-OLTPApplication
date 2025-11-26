@@ -39,7 +39,7 @@ services:
       - NODE3_PORT=3306
       - DB_USER=root
       - DB_PASSWORD=password123
-    priviledged: true
+    privileged: true
 
 volumes:
   node2_data:

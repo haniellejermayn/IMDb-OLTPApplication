@@ -24,10 +24,12 @@ class ConcurrencyTester:
             conn = self.db.get_connection(node_name, isolation_level)
             if conn:
                 try:
+                    conn.start_transaction() 
                     start_time = time.time()
                     cursor = conn.cursor(dictionary=True)
                     cursor.execute("SELECT * FROM titles WHERE tconst = %s", (tconst,))
                     data = cursor.fetchone()
+                    conn.commit() 
                     end_time = time.time()
                     
                     with lock:
@@ -38,6 +40,7 @@ class ConcurrencyTester:
                             'isolation_level': isolation_level
                         }
                 except Exception as e:
+                    conn.rollback()
                     with lock:
                         results[node_name] = {'success': False, 'error': str(e)}
                 finally:

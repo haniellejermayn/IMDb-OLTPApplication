@@ -307,24 +307,32 @@ class DatabaseManager:
         
         return {'error': 'Title not found in any node'}
     
-    def execute_query(self, node_name, query, params=None, isolation_level='READ COMMITTED'):
-        """Execute query on specific node"""
+    def execute_query(self, node_name, query, params=None, isolation_level='READ COMMITTED', autocommit=True):
         conn = self.get_connection(node_name, isolation_level)
         
         if not conn:
             return {'success': False, 'error': f'{node_name} unavailable'}
         
         try:
+            if not autocommit:
+                conn.start_transaction()  # Explicit transaction
+            
             cursor = conn.cursor()
             cursor.execute(query, params or ())
-            conn.commit()
-            return {'success': True, 'rows_affected': cursor.rowcount}
+            
+            if autocommit:
+                conn.commit()
+            # Else: caller must commit/rollback
+            
+            return {'success': True, 'rows_affected': cursor.rowcount, 'connection': conn if not autocommit else None}
         except Error as e:
-            conn.rollback()
+            if autocommit:
+                conn.rollback()
             logger.error(f"Error executing query on {node_name}: {e}")
-            return {'success': False, 'error': str(e)}
+            return {'success': False, 'error': str(e), 'connection': conn if not autocommit else None}
         finally:
-            conn.close()
+            if autocommit:
+                conn.close()
     
     def get_transaction_logs(self, limit=50):
         """Get recent transaction logs"""

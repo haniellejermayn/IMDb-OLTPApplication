@@ -4,7 +4,6 @@ from .recovery_handler import RecoveryHandler
 
 logger = logging.getLogger(__name__)
 
-# TODO: change all operations to be CENTRAL first, then fragment
 # TODO: Optional lightweight conflict detection
 # Compare existing DB values with intended update before writing
 # Log a warning if there’s a difference to track potential concurrent updates

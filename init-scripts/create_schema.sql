@@ -1,5 +1,4 @@
 -- Schema for all nodes (homogeneous)
--- TODO: possibly add a failed_transactions for recovery
 CREATE DATABASE IF NOT EXISTS imdb_distributed;
 USE imdb_distributed;
 
@@ -24,12 +23,15 @@ CREATE TABLE transaction_log (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     transaction_id VARCHAR(50) NOT NULL,
     node_id VARCHAR(10) NOT NULL,
-    operation_type ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    operation_type ENUM('INSERT', 'UPDATE', 'DELETE', 'RECOVERY_INSERT', 'RECOVERY_UPDATE', 'RECOVERY_DELETE') NOT NULL,
     table_name VARCHAR(50) NOT NULL,
     record_id VARCHAR(20) NOT NULL,
+    status ENUM('SUCCESS', 'FAILED', 'PENDING') DEFAULT 'PENDING',  -- ADD THIS
+    error_message TEXT,  
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     replicated BOOLEAN DEFAULT FALSE,
     
     INDEX idx_transaction (transaction_id),
-    INDEX idx_replicated (replicated)
+    INDEX idx_replicated (replicated),
+    INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

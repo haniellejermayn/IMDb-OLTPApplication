@@ -1,0 +1,85 @@
+h1, h3, h4 {
+    font-weight: bold;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Container for all nodes */
+#nodes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+/* Individual node styling */
+.node {
+    display: flex;
+
+    align-items: center;
+    width: 660px;
+    gap: 1.25rem;
+    padding-left: 1.25rem;
+    border-radius: 12px;
+    background-color: var(--color-secondary);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+/* Node label styling */
+.node-label {
+    font-size: 2.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Node data container */
+.node-data {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: white;
+}
+
+/* Node details and health status */
+.node-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.node-details h3, .node-details h4 {
+    margin: 0;
+}
+
+/* Node health indicator */
+.node-health {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.node-health h4 {
+    margin: 0;
+}
+
+/* Health indicator circle */
+.node-health-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #4CAF50; /* Green for online */
+}

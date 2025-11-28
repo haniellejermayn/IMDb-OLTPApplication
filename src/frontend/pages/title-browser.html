@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Titles Browser</title>
+
+    <link rel="stylesheet" href="../public/css/general.css" />
+    <link rel="stylesheet" href="../public/css/title-browser-script.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>TITLES BROWSER</h1>
+      <div class="break"></div>
+
+      <!-- Search -->
+      <div id="searchRow">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search title..."
+          oninput="filterTitles()"
+        />
+      </div>
+
+      <!-- Title List -->
+      <div id="titlesList"></div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button onclick="prevPage()">Previous</button>
+        <button onclick="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <script src="../public/js/title-browser-script.js"></script>
+  </body>
+</html>

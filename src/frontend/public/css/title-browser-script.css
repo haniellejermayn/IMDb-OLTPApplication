@@ -1,0 +1,50 @@
+/* ------- Title Detail Bar Styling ------- */
+body {
+  max-width: 100vh;
+}
+
+.title-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: var(--color-secondary);
+  border: 1px solid var(--color-sub);
+  border-radius: 8px;
+}
+
+.title-left,
+.title-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-name {
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--color-main);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+#searchRow {
+  width: 100%;
+}
+
+#searchInput {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    padding: 0.7rem;
+    border: 1px solid var(--color-sub);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+

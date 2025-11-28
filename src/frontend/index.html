@@ -33,18 +33,36 @@
 
     <h3>Concurrency Tests (Step 3)</h3>
     <ul>
-        <li><code>POST /test/concurrent-read</code> - Case 1: Concurrent reads
-            <br>Body: <code>{"tconst": "tt0000001", "isolation_level": "READ COMMITTED"}</code>
+        <li>☐ <strong>Case 1 Button</strong>: "Test Concurrent Reads" 
+            - Shows multiple nodes reading same record simultaneously
+            - Display: consistency check, read times, isolation level used
         </li>
-        <li><code>POST /test/read-write-conflict</code> - Case 2: Read while writing
-            <br>Body: <code>{"tconst": "tt0000001", "new_data": {"runtime_minutes": 150}, "isolation_level": "READ COMMITTED"}</code>
+        
+        <li>☐ <strong>Case 2 Button</strong>: "Test Read-While-Write" 
+            - Shows readers trying to read while a writer updates
+            - Display: dirty reads detected, blocking observed, repeatable reads
         </li>
-        <li><code>POST /test/concurrent-write</code> - Case 3: Concurrent writes
-            <br>Body: <code>{"updates": [{"tconst": "tt0000001", "data": {"runtime_minutes": 100}}], "isolation_level": "SERIALIZABLE"}</code>
+        
+        <li>☐ <strong>Case 3 Button</strong>: "Test Concurrent Writes" 
+            - Shows MULTIPLE writers updating THE SAME record
+            - Display: deadlocks, serialization, which writer won
+            - **CRITICAL**: Make it clear this tests write conflicts on ONE record
         </li>
-        <li><code>POST /test/isolation-levels</code> - Compare all isolation levels
-            <br>Body: <code>{"tconst": "tt0000001", "operation": "read|write|read_write"}</code>
+        
+        <li>☐ <strong>Isolation Level Comparison</strong>: 
+            - Dropdown or buttons for each level
+            - Side-by-side results showing behavior differences
+            - Recommendation for "best" level with justification
         </li>
+    </ul>
+
+    <h3>For Demo - Make This Visual!</h3>
+    <ul>
+        <li>☐ Show node health with colored indicators (green/yellow/red)</li>
+        <li>☐ Real-time log of operations (like a console/terminal output)</li>
+        <li>☐ **Pending replication counter** that updates automatically</li>
+        <li>☐ For concurrency tests: Show threads/transactions side-by-side with timing</li>
+        <li>☐ For recovery: Show "Node Offline" → operation → "Queued" → recover → "Synced"</li>
     </ul>
 
     <h3>Recovery Tests (Step 4)</h3>

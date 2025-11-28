@@ -27,6 +27,7 @@ body {
     background-color: var(--color-secondary);
 }
 
+/* Case option styling */
 .case-option {
     display: flex;
     flex-direction: column;
@@ -47,11 +48,13 @@ body {
     background-color: var(--color-sub);
 }
 
+/* Current selected case option */
 #case-1-option {
     background-color: var(--color-sub);
     color: var(--color-secondary);
 }
 
+/* Case data container */
 .case-data-container {
     display: flex;
     flex-direction: column;
@@ -65,10 +68,12 @@ body {
     background-color: var(--color-secondary);
 }
 
+/* Case number and description */
 .case-header {
     padding-top: 0.25rem;
 }
 
+/* TCONST and isolation level */
 form {
     display: flex;
     flex-direction: column;
@@ -83,6 +88,7 @@ form label {
     margin-bottom: 0.3rem;
 }
 
+/* TCONST input field */
 form input {
     padding: 0.5rem;
     border: 1px solid var(--color-sub);
@@ -93,6 +99,7 @@ form input {
     margin-bottom: 1rem;
 }
 
+/* isolation level selection */
 form select {
     padding: 0.5rem;
     padding-right: 1rem;
@@ -104,12 +111,20 @@ form select {
     margin-bottom: 1rem;
 }
 
+/* Submit button */
+form button {
+    align-self: flex-end;
+    margin-top: 0.5rem;
+}
+
+/* Node results container */
 .node-results-container {
     display: flex;
     flex-wrap: wrap;
     gap: 1.25rem;
 }
 
+/* node result card */
 .node-result {
     display: flex;
     flex-direction: column;
@@ -121,6 +136,7 @@ form select {
     background-color: var(--color-bg);
 }
 
+/* data read by each node */
 .results-content {
     display: flex;
     flex-direction: column;
@@ -130,6 +146,7 @@ form select {
     background-color: white;
 }
 
+/* data title and genre */
 .results-content .top {
     display: flex;
     flex-direction: column;
@@ -140,22 +157,26 @@ form select {
     color: var(--color-sub);
 }
 
+/* runtime, start year, and last update */
 .results-content .bottom {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
+/* runtime and start year row */
 .results-content .row {
     display: flex;
     gap: 0.625rem;
 }
 
+/* last update */
 .results-content .last-update {
     font-style: italic;
     color: var(--color-sub);
 }
 
+/* results of node read */
 .read-results {
     display: flex;
     flex-direction: column;
@@ -163,11 +184,13 @@ form select {
     margin-top: 1rem;
 }
 
+/* temporary read status */
 #node-1-results .read-results .read-status {
     font-weight: bold;
     color: #3ad076;
 }
 
+/* temporary read status */
 #node-2-results .read-results .read-status {
     font-weight: bold;
     color: #e83d3d;

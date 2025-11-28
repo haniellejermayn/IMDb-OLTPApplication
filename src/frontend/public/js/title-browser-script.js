@@ -22,19 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     list.forEach((movie) => {
       container.innerHTML += `
-        <div class="title-item">
-          <div class="title-left">
-            <span><strong>TCONST:</strong> ${movie.tconst}</span>
-            <span class="title-name">${movie.primary_title}</span>
-          </div>
-          <div class="title-right">
-            <span><strong>Year:</strong> ${movie.start_year}</span>
-            <span><strong>Minutes:</strong> ${movie.runtime_minutes}</span>
-            <span><strong>Genre:</strong> ${movie.genres}</span>
-            <span><strong>Type:</strong> ${movie.title_type}</span>
-          </div>
-        </div>
-      `;
+    <div class="title-item clickable" data-tconst="${movie.tconst}">
+      <div class="title-left">
+        <span><strong>TCONST:</strong> ${movie.tconst}</span>
+        <span class="title-name">${movie.primary_title}</span>
+      </div>
+      <div class="title-right">
+        <span><strong>Year:</strong> ${movie.start_year}</span>
+        <span><strong>Minutes:</strong> ${movie.runtime_minutes}</span>
+        <span><strong>Genre:</strong> ${movie.genres}</span>
+        <span><strong>Type:</strong> ${movie.title_type}</span>
+      </div>
+    </div>
+  `;
     });
 
     document.getElementById("pageNumber").innerText = `Page ${currentPage}`;
@@ -49,10 +49,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // If searching, add search parameters and call /titles/search
-      if (currentQuery.q || currentQuery.year_from || currentQuery.year_to || currentQuery.type || currentQuery.genre) {
+      if (
+        currentQuery.q ||
+        currentQuery.year_from ||
+        currentQuery.year_to ||
+        currentQuery.type ||
+        currentQuery.genre
+      ) {
         if (currentQuery.q) params.append("q", currentQuery.q);
-        if (currentQuery.year_from) params.append("year_from", currentQuery.year_from);
-        if (currentQuery.year_to) params.append("year_to", currentQuery.year_to);
+        if (currentQuery.year_from)
+          params.append("year_from", currentQuery.year_from);
+        if (currentQuery.year_to)
+          params.append("year_to", currentQuery.year_to);
         if (currentQuery.type) params.append("type", currentQuery.type);
         if (currentQuery.genre) params.append("genre", currentQuery.genre);
 
@@ -69,9 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error(await res.text());
 
       const data = await res.json();
-      console.log(data.data)
+      console.log(data.data);
 
-      return data.data
+      return data.data;
     } catch (err) {
       console.error("Error fetching titles:", err);
       return [];
@@ -105,4 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   showPage();
+});
+
+document.addEventListener("click", (e) => {
+  const item = e.target.closest(".title-item");
+  if (!item) return;
+
+  const tconst = item.getAttribute("data-tconst");
+  window.location.href = `/edit/${tconst}`;
 });

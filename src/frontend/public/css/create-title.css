@@ -87,6 +87,14 @@ body {
 
 #last-row {
     display: flex;
-    justify-content: space-between;
-    align-items: end;
+    justify-content: space-between; 
+    align-items: center;          
+}
+
+#last-row #result {
+    flex: 1;                     
+}
+
+#last-row button {
+    margin-left: 0.5rem;          
 }

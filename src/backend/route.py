@@ -16,3 +16,7 @@ def register_routes(app):
     @app.route("/browse")
     def search():
         return render_template("title-browser.html")
+    
+    @app.route("/edit/<tconst>")
+    def edit(tconst):
+        return render_template("create-title.html", tconst=tconst)

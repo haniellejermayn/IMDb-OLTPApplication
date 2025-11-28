@@ -39,7 +39,7 @@ class TransactionLogger:
         """
         
         # Convert params tuple to JSON
-        params_json = json.dumps(list(params)) if params else None
+        params_json = json.dumps(params, default=lambda o: o.isoformat() if isinstance(o, (datetime, datetime.date, datetime.time)) else str(o)) if params else None
         
         log_params = (
             transaction_id,

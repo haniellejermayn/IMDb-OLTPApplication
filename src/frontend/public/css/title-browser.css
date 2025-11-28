@@ -46,7 +46,7 @@ body {
   padding: 0.7rem;
   border-radius: 8px;
   border: 1px solid var(--color-sub);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   width: 100%;
 }
@@ -63,4 +63,12 @@ body {
 
 #searchInput {
   flex: 1 1 100%;
+}
+
+.title-item.clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.title-item.clickable:hover {
+  background: #f1e6e6;
 }

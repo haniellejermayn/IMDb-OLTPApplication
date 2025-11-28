@@ -154,7 +154,7 @@ def test_concurrent_write():
     }
     """
     data = request.json
-    tconst = data.get('tconst')  # NEW: Single tconst for all
+    tconst = data.get('tconst') 
     updates_data = data.get('updates', [])
     isolation_level = data.get('isolation_level', 'READ COMMITTED')
     

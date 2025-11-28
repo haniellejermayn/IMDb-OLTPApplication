@@ -5,30 +5,41 @@
     <title>Titles Browser</title>
 
     <link rel="stylesheet" href="../public/css/general.css" />
-    <link rel="stylesheet" href="../public/css/title-browser-script.css" />
+    <link rel="stylesheet" href="../public/css/title-browser.css" />
   </head>
   <body>
     <div class="container">
       <h1>TITLES BROWSER</h1>
       <div class="break"></div>
 
-      <!-- Search -->
+      <!-- Search Filters -->
       <div id="searchRow">
+        <input id="searchInput" type="text" placeholder="Search title..." />
+        <input id="yearFrom" type="number" placeholder="Year From" />
+        <input id="yearTo" type="number" placeholder="Year To" />
         <input
-          id="searchInput"
+          id="typeSelect"
           type="text"
-          placeholder="Search title..."
-          oninput="filterTitles()"
+          placeholder="Type (movie, tvSeries, short)"
         />
+        <input
+          id="genreSelect"
+          type="text"
+          placeholder="Genre (Action, Comedy, Drama)"
+        />
+        <button id="searchBtn">Search</button>
       </div>
 
-      <!-- Title List -->
+      <div class="break"></div>
+
+      <!-- Titles List -->
       <div id="titlesList"></div>
 
       <!-- Pagination -->
       <div class="pagination">
-        <button onclick="prevPage()">Previous</button>
-        <button onclick="nextPage()">Next</button>
+        <button id="prevBtn">Previous</button>
+        <span id="pageNumber"></span>
+        <button id="nextBtn">Next</button>
       </div>
     </div>
 

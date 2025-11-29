@@ -2,13 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Dashboard</title>
+    <title>Transaction Logs</title>
     <link rel="stylesheet" href="../public/css/general.css" />
     <link rel="stylesheet" href="../public/css/transaction-logs.css" />
   </head>
   <body>
     <div class="container">
-      <h1>TRANSACTION LOGS</h1>
+      <div class="top-row">
+        <h1>TRANSACTION LOGS</h1>
+        <a id="back" href="/">Back to Dashboard</a>
+      </div>
       <div class="break"></div>
       <div class="logs-section">
         <div class="logs-controls">
@@ -43,8 +46,6 @@
           </tbody>
         </table>
       </div>
-
-      <a href="/"> Back to Dashboard </a>
     </div>
 
     <script src="../public/js/transaction-logs-script.js"></script>

@@ -72,3 +72,15 @@ body {
 .title-item.clickable:hover {
   background: #f1e6e6;
 }
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  width: 100%;
+}
+
+#back {
+  text-decoration: none;
+  font-size: 1rem;
+}

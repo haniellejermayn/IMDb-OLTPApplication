@@ -1,174 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Recovery Tests</title>
     <link rel="stylesheet" href="../public/css/general.css" />
     <link rel="stylesheet" href="../public/css/recovery-tests.css" />
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="container">
+      <div class="top-row">
         <h1>RECOVERY TESTS</h1>
+        <a id="back" href="/">Back to Dashboard</a>
+      </div>
+
+      <div class="break"></div>
+
+      <div class="case-options-container">
+        <button class="case-option text-main" id="case-1-option">
+          <b>Case 1</b>
+        </button>
+        <button class="case-option text-main" id="case-2-option">
+          <b>Case 2</b>
+        </button>
+        <button class="case-option text-main" id="case-3-option">
+          <b>Case 3</b>
+        </button>
+        <button class="case-option text-main" id="case-4-option">
+          <b>Case 4</b>
+        </button>
+      </div>
+
+      <div class="case-data-container" id="case-1">
+        <div class="case-header">
+          <h2>Case #1</h2>
+          <p>Simulate central node failure</p>
+          <div class="break"></div>
+        </div>
+
+        <form id="case-1-form">
+          <button type="submit">Get Instructions</button>
+        </form>
+
+        <h1>Instructions</h1>
+
+        <div class="instructions-container"></div>
 
         <div class="break"></div>
 
-        <div class="case-options-container">
-            <button class="case-option text-main" id="case-1-option"><b>Case 1</b></button>
-            <button class="case-option text-main" id="case-2-option"><b>Case 2</b></button>
-            <button class="case-option text-main" id="case-3-option"><b>Case 3</b></button>
-            <button class="case-option text-main" id="case-4-option"><b>Case 4</b></button>
+        <h1>Test Status</h1>
+
+        <div class="test-status-container">
+          <div class="status-card">
+            <div class="status-label">Central Node Status:</div>
+            <div class="status-value"></div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">Pending Replications:</div>
+            <div class="status-value"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-data-container" id="case-2">
+        <div class="case-header">
+          <h2>Case #2</h2>
+          <p>Trigger central node recovery</p>
+          <div class="break"></div>
         </div>
 
-        <div class="case-data-container" id="case-1">
-            <div class="case-header">
-                <h2>Case #1</h2>
-                <p>Simulate central node failure</p>
-                <div class="break"></div>
-            </div>
+        <form id="case-2-form">
+          <button type="submit">Trigger Recovery</button>
+        </form>
 
-            <form id="case-1-form">
-                <button type="submit">Get Instructions</button>
-            </form>
+        <h1>Recovery Results</h1>
 
-            <h1>Instructions</h1>
-
-            <div class="instructions-container">
-                
-            </div>
-
-            <div class="break"></div>
-
-            <h1>Test Status</h1>
-
-            <div class="test-status-container">
-                <div class="status-card">
-                    <div class="status-label">Central Node Status:</div>
-                    <div class="status-value"></div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">Pending Replications:</div>
-                    <div class="status-value"></div>
-                </div>
-            </div>
+        <div class="recovery-summary-container">
+          <div class="summary-card">
+            <div class="summary-label">Status:</div>
+            <div class="summary-value"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Replicated Records:</div>
+            <div class="summary-value"></div>
+          </div>
         </div>
 
-        <div class="case-data-container" id="case-2">
-            <div class="case-header">
-                <h2>Case #2</h2>
-                <p>Trigger central node recovery</p>
-                <div class="break"></div>
-            </div>
+        <div class="break"></div>
 
-            <form id="case-2-form">
-                <button type="submit">Trigger Recovery</button>
-            </form>
+        <h1>Replicated Transactions</h1>
 
-            <h1>Recovery Results</h1>
+        <div class="logs-container"></div>
+      </div>
 
-            <div class="recovery-summary-container">
-                <div class="summary-card">
-                    <div class="summary-label">Status:</div>
-                    <div class="summary-value"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Replicated Records:</div>
-                    <div class="summary-value"></div>
-                </div>
-            </div>
-
-            <div class="break"></div>
-
-            <h1>Replicated Transactions</h1>
-
-            <div class="logs-container">
-                
-            </div>
+      <div class="case-data-container" id="case-3">
+        <div class="case-header">
+          <h2>Case #3</h2>
+          <p>Simulate fragment node failure.</p>
+          <div class="break"></div>
         </div>
 
-        <div class="case-data-container" id="case-3">
-            <div class="case-header">
-                <h2>Case #3</h2>
-                <p>Simulate fragment node failure.</p>
-                <div class="break"></div>
-            </div>
+        <form id="case-3-form">
+          <label for="node-select">Select Node:</label>
+          <select name="node-select" id="node-select">
+            <option value="node2">Node 2</option>
+            <option value="node3">Node 3</option>
+          </select>
 
-            <form id="case-3-form">
-                <label for="node-select">Select Node:</label>
-                <select name="node-select" id="node-select">
-                    <option value="node2">Node 2</option>
-                    <option value="node3">Node 3</option>
-                </select>
+          <button type="submit">Get Instructions</button>
+        </form>
 
-                <button type="submit">Get Instructions</button>
-            </form>
+        <h1>Instructions</h1>
 
-            <h1>Instructions</h1>
+        <div class="instructions-container"></div>
 
-            <div class="instructions-container">
-                
-            </div>
+        <div class="break"></div>
 
-            <div class="break"></div>
+        <h1>Test Status</h1>
 
-            <h1>Test Status</h1>
+        <div class="test-status-container">
+          <div class="status-card">
+            <div class="status-label">Fragment Node Status:</div>
+            <div class="status-value"></div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">Pending Replications:</div>
+            <div class="status-value"></div>
+          </div>
+        </div>
+      </div>
 
-            <div class="test-status-container">
-                <div class="status-card">
-                    <div class="status-label">Fragment Node Status:</div>
-                    <div class="status-value"></div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">Pending Replications:</div>
-                    <div class="status-value"></div>
-                </div>
-            </div>
+      <div class="case-data-container" id="case-4">
+        <div class="case-header">
+          <h2>Case #4</h2>
+          <p>Trigger fragment recovery.</p>
+          <div class="break"></div>
         </div>
 
-        <div class="case-data-container" id="case-4">
-            <div class="case-header">
-                <h2>Case #4</h2>
-                <p>Trigger fragment recovery.</p>
-                <div class="break"></div>
-            </div>
+        <form id="case-4-form">
+          <label for="node-select-recovery">Select Node:</label>
+          <select name="node-select-recovery" id="node-select-recovery">
+            <option value="node2">Node 2</option>
+            <option value="node3">Node 3</option>
+          </select>
 
-            <form id="case-4-form">
-                <label for="node-select-recovery">Select Node:</label>
-                <select name="node-select-recovery" id="node-select-recovery">
-                    <option value="node2">Node 2</option>
-                    <option value="node3">Node 3</option>
-                </select>
+          <button type="submit">Trigger Recovery</button>
+        </form>
 
-                <button type="submit">Trigger Recovery</button>
-            </form>
+        <h1>Recovery Results</h1>
 
-            <h1>Recovery Results</h1>
-
-            <div class="recovery-summary-container">
-                <div class="summary-card">
-                    <div class="summary-label">Status:</div>
-                    <div class="summary-value"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Node:</div>
-                    <div class="summary-value"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Replicated Records:</div>
-                    <div class="summary-value"></div>
-                </div>
-            </div>
-
-            <div class="break"></div>
-
-            <h1>Replicated Transactions</h1>
-
-            <div class="logs-container">
-                
-            </div>
+        <div class="recovery-summary-container">
+          <div class="summary-card">
+            <div class="summary-label">Status:</div>
+            <div class="summary-value"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Node:</div>
+            <div class="summary-value"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Replicated Records:</div>
+            <div class="summary-value"></div>
+          </div>
         </div>
 
+        <div class="break"></div>
+
+        <h1>Replicated Transactions</h1>
+
+        <div class="logs-container"></div>
+      </div>
     </div>
     <script src="../public/js/recovery-tests.js"></script>
-</body>
+  </body>
 </html>

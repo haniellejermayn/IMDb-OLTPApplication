@@ -219,3 +219,17 @@ tr:nth-child(even) {
 .boolean { color: #569cd6; }
 .null    { color: #569cd6; }
 .key     { color: #9cdcfe; }
+
+/* -----------------------------
+   Back Link
+------------------------------ */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+}
+
+#back {
+  text-decoration: none;
+  font-size: 1rem;
+}

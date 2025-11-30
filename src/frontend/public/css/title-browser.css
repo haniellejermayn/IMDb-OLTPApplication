@@ -19,6 +19,18 @@ body {
   flex-direction: column;
 }
 
+.title-right {
+  width: 12rem;        
+  flex-shrink: 0;      
+  text-align: left;   
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.title-left {
+  flex: 1;            
+}
+
 .title-name {
   font-size: 1.7rem;
   font-weight: 600;

@@ -20,3 +20,7 @@ def register_routes(app):
     @app.route("/edit/<tconst>")
     def edit(tconst):
         return render_template("create-title.html", tconst=tconst)
+    
+    @app.route("/recovery-tests")
+    def recovery_tests():
+        return render_template("recovery-tests.html")

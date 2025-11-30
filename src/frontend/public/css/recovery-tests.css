@@ -196,6 +196,11 @@ form button {
     font-weight: bold;
 }
 
+.status-value.online {
+    color: #3ad076;
+    font-weight: bold;
+}
+
 
 .recovery-summary-container {
     display: flex;

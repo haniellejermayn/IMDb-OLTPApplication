@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:80";
+const API_URL = "";
 
 function renderLogs(logs) {
   const tableBody = document.querySelector("#logsTable tbody");

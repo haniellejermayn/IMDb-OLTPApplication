@@ -1,5 +1,5 @@
 
-const API_BASE_URL = 'http://localhost';
+const API_BASE_URL = '';
 
 const caseButtons = document.querySelectorAll('.case-option');
 const caseContainers = document.querySelectorAll('.case-data-container');

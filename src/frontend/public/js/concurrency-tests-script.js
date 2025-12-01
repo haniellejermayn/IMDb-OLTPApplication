@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:80"; // change to http://ccscloud.dlsu.edu.ph:60157/
+const API_URL = ""; // change to http://ccscloud.dlsu.edu.ph:60157/
 
 /********************************************
  * CASE SWITCHING

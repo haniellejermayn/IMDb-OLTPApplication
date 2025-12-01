@@ -361,17 +361,5 @@ def test_isolation_levels():
 from route import register_routes
 register_routes(app)
 
-# ---------- SPA / Fallback (Non-Docker Only) ----------
-if not IN_DOCKER:
-    @app.route("/<path:path>")
-    def serve_frontend(path):
-        """Serve frontend files with SPA fallback to index.html"""
-        full_path = os.path.join(BASE_DIR, path)
-        if path and os.path.isfile(full_path):
-            return send_from_directory(BASE_DIR, path)
-        
-        # Fallback to index.html for SPA routing
-        return send_from_directory(BASE_DIR, "index.html")
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)

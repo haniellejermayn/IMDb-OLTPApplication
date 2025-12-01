@@ -202,12 +202,12 @@ form button {
 }
 
 .read-results .read-status.success {
-    color: #3ad076;
+    color: green;
     font-weight: bold;
 }
 
 .read-results .read-status.failed {
-    color: #e83d3d;
+    color: red;
     font-weight: bold;
 }
 
@@ -325,7 +325,7 @@ form button {
 
 .read-results .read-status {
     font-weight: bold;
-    color: #3ad076;
+    color: green;
 }
 
 .write-content-container {
@@ -390,7 +390,7 @@ form button {
 
 .operation-status.successful {
     font-weight: bold;
-    color: #3ad076;
+    color: green;
 }
 
 .operation-status.unsuccessful {
@@ -440,13 +440,10 @@ h3 {
 .read-results.minimal {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.2rem;
   padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #fafafa;
   font-size: 0.9rem;
-  color: #333;
   margin-top: 0.5rem;
 }
 
@@ -475,7 +472,7 @@ h3 {
 .writer-results.minimal {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.2rem;
   font-size: 0.9rem;
   color: #333;
   width: 100%;
@@ -495,8 +492,10 @@ h3 {
 
 .write-status.success {
   color: green;
+  font-weight: bold;
 }
 
 .write-status.failed {
   color: red;
+  font-weight: bold;
 }

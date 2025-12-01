@@ -73,23 +73,27 @@ function buildNodeCard(nodeName, readerIndex, result) {
     <div class="node-result">
       <h3 class="node-name">${nodeName} - Reader ${readerIndex}</h3>
       <div class="read-results">
-        <div class="results-content">
-          <!-- Movie details with indent -->
-          <div class="detail title">${data.primary_title} (${
-    data.title_type
-  })</div>
-          <div class="detail genre">Genre: ${data.genres}</div>
-          <div class="detail">Runtime: ${data.runtime_minutes} min</div>
-          <div class="detail">Year: ${data.start_year}</div>
-          <div class="detail">TCONST: ${data.tconst}</div>
-          <div class="detail">Last Updated: ${formatDate(
-            data.last_updated
-          )}</div>
+        <div class="results-content original-value-content">
+            <div class="top">
+                <div class="title"><b>${data.primary_title}</b></div>
+                <div class="genre">${data.genres}</div>
+            </div>
+            <div class="bottom">
+                <div class="row">
+                    <div class="runtime-minutes">${data.runtime_minutes} minutes</div>
+                    <div class="separator">|</div>
+                    <div class="start-year">${data.start_year}</div>
+                </div>
+                <h6 class="last-update">Last updated on ${formatDate(
+                  data.last_updated
+                )}</h6>
+            </div>
         </div>
 
         <div class="bottom-info">
-          <div class="detail">Read Duration: ${result.duration}s</div>
-          <div class="detail">Isolation Level: ${result.isolation_level}</div>
+          <div class="detail"><b>Read Duration:</b> ${result.duration}s</div>
+          <div class="detail"><b>Isolation Level:</b> ${result.isolation_level}</div>
+          <div class="detail"><b>Repeatable:</b> ${result.repeatable}</div>
           <div class="read-status successful">Successful Read</div>
           <div class="timestamp">${formatDate(result.timestamp)}</div>
         </div>
@@ -393,6 +397,15 @@ document.getElementById("case-1-form").addEventListener("submit", async (e) => {
       if (explanationEl)
         explanationEl.textContent = result.analysis.explanation || "";
 
+      let consistencyText = "";
+      if (result.analysis.final_state_consistent_across_nodes) {
+        consistencyText = "Final states are consistent across all nodes.";
+      } else {
+        consistencyText = "Final states are not consistent across all nodes.";
+      }
+
+      document.getElementById("case1-consistency-val").textContent = consistencyText;
+
       analysisContainer.style.display = "block";
     }
   } catch (err) {
@@ -473,6 +486,8 @@ document.getElementById("case-2-form").addEventListener("submit", async (e) => {
      * B. NODE RESULT CARDS
      **********************************/
 
+    document.getElementById("case2-node-results-container").style.display = "flex";
+
     // Original Value
     originalValueContainer.innerHTML = "";
     originalCardHTML = buildOriginalNodeCard(result.results.original_value);
@@ -533,8 +548,7 @@ document.getElementById("case-2-form").addEventListener("submit", async (e) => {
      * C. ANALYSIS SECTION
      **********************************/
     if (result.analysis) {
-      const consistencyEl = analysisContainer.querySelector(".consistency");
-      const explanationEl = analysisContainer.querySelector(".explanation");
+      document.getElementById("case2-result-analysis").style.display = "flex";
 
       let consistencyText = "";
       if (result.analysis.final_state_consistent_across_nodes) {

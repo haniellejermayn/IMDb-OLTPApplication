@@ -37,6 +37,37 @@ case1Form.addEventListener('submit', async (e) => {
     await handleCase1();
 });
 
+/********************************************
+ * JSON PRETTY FORMATTER (console-style)
+ ********************************************/
+function syntaxHighlight(json) {
+  if (typeof json !== "string") {
+    json = JSON.stringify(json, null, 4);
+  }
+
+  json = json
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return json.replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?)/g,
+    (match) => {
+      let cls = "number";
+      if (/^"/.test(match)) {
+        cls = /:$/.test(match) ? "key" : "string";
+      } else if (/true|false/.test(match)) {
+        cls = "boolean";
+      } else if (/null/.test(match)) {
+        cls = "null";
+      }
+      return `<span class="${cls}">${match}</span>`;
+    }
+  );
+}
+
+// ================================================
+
 async function handleCase1() {
     try {
         const button = case1Form.querySelector('button');
@@ -53,6 +84,16 @@ async function handleCase1() {
         }
         
         const data = await response.json();
+        console.log(data)
+
+        const jsonSection = document.getElementById("case1-json-response");
+        const jsonBox = document.getElementById("case1-json-content");
+
+        jsonBox.innerHTML = `<pre class="code-block" style="white-space: pre-wrap;">${syntaxHighlight(
+            data
+        )}</pre>`;
+        if (data && Object.keys(data).length)
+            jsonSection.style.display = "block";
         
         populateCase1Instructions(data.steps);
         
@@ -74,16 +115,45 @@ async function handleCase1() {
 function populateCase1Instructions(steps) {
     const container = document.querySelector('#case-1 .instructions-container');
     container.innerHTML = '';
-    
+
+    const insert_body = {
+        title_type: "movie",
+        primary_title: "Recovery Test - Node1 Down",
+        start_year: 2024,
+        runtime_minutes: 110,
+        genres: "Drama"
+    }
+
     steps.forEach((step, index) => {
         const cleanStep = step.replace(/^\d+\.\s*/, '');
         
         const parts = cleanStep.split(':');
         const description = parts[0].trim();
-        const command = parts[1] ? parts[1].trim() : null;
+        let command = parts[1] ? parts[1].trim() : null;
         
         let codeBlock = '';
-        if (command !== null) {
+        let extraButton = '';
+
+        // Custom handling for Step 2 (index 1)
+        if (index === 1) {
+            codeBlock = `
+            <div id="json-response-c2" class="json-response">
+                <h4>JSON POST</h4>
+                <div class="code-block-instructions json-content" id="step-2-code">${syntaxHighlight(insert_body)}</div>
+            </div>
+            
+            `;
+            extraButton = `<button id="insert-step-2">Insert</button>`;
+        } else if (index === 2) {
+            codeBlock = `<div class="code-block">${command}</div>`;
+            extraButton = `<button id="check-step-3">Check Recovery Status</button>`;
+        } else if (index === 4) {
+            codeBlock = `<div class="code-block">${command}</div>`;
+            extraButton = `<button id="recover-step-5">Recover</button>`;
+        } else if (index === 0 || index === 3) {
+            codeBlock = `<div class="code-block">${command}</div>`;
+            extraButton = `<button class="check-health">Check Health</button>`;
+        } else if (command !== null) {
             codeBlock = `<div class="code-block">${command}</div>`;
         }
 
@@ -93,16 +163,144 @@ function populateCase1Instructions(steps) {
                 <div class="step-content">
                     <h3>${description}</h3>
                     ${codeBlock}
+                    ${extraButton}
                 </div>
             </div>
             `;
         
         container.innerHTML += stepHTML;
     });
+
+    const btn_insert = document.getElementById("insert-step-2");
+    if (btn_insert) {
+        btn_insert.addEventListener("click", () => insertNewTitle(insert_body));
+    }
+
+    const btn_check = document.getElementById("check-step-3");
+    if (btn_check) {
+        btn_check.addEventListener("click", () => checkStatus());
+    }
+
+    const btn_recover = document.getElementById("recover-step-5");
+    if (btn_recover) {
+        btn_recover.addEventListener("click", () => recover());
+    }
+
+    document.body.addEventListener("click", (e) => {
+        if (e.target.classList.contains("check-health")) {
+            checkHealth();
+        }
+    })
 }
 
-async function updateCase1Status() {
+async function insertNewTitle(body) {
     try {
+        const API_URL = `${API_BASE_URL}/title`;
+
+        const btn = document.getElementById("insert-step-2");
+        btn.disabled = true;
+        btn.textContent = "Inserting...";
+
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        const jsonSection = document.getElementById("case1-json-response");
+        const jsonBox = document.getElementById("case1-json-content");
+
+        jsonBox.innerHTML = `<pre class="code-block" style="white-space: pre-wrap;">${syntaxHighlight(
+            data
+        )}</pre>`;
+        if (data && Object.keys(data).length)
+            jsonSection.style.display = "block";
+
+        btn.disabled = false;
+        btn.textContent = "Insert";
+
+        updateCase1Status()
+    } catch (err) {
+        console.error("Error inserting new title:", err);
+    }
+}
+
+async function checkStatus() {
+    try {
+        const API_URL = `${API_BASE_URL}/recovery/status`;
+
+        const btn = document.getElementById("check-step-3");
+        btn.disabled = true;
+        btn.textContent = "Checking recovery status...";
+
+        const res = await fetch(API_URL, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await res.json();
+
+        const jsonSection = document.getElementById("case1-json-response");
+        const jsonBox = document.getElementById("case1-json-content");
+
+        jsonBox.innerHTML = `<pre class="code-block" style="white-space: pre-wrap;">${syntaxHighlight(
+            data
+        )}</pre>`;
+        if (data && Object.keys(data).length)
+            jsonSection.style.display = "block";
+
+        btn.disabled = false;
+        btn.textContent = "Check Recovery Status";
+
+        updateCase1Status()
+    } catch (err) {
+        console.error("Error checking status:", err);
+    }
+}
+
+async function recover() {
+    try {
+        const API_URL = `${API_BASE_URL}/test/failure/central-recovery`;
+
+        const btn = document.getElementById("recover-step-5");
+        btn.disabled = true;
+        btn.textContent = "Recovering...";
+
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await res.json();
+
+        const jsonSection = document.getElementById("case1-json-response");
+        const jsonBox = document.getElementById("case1-json-content");
+
+        jsonBox.innerHTML = `<pre class="code-block" style="white-space: pre-wrap;">${syntaxHighlight(
+            data
+        )}</pre>`;
+        if (data && Object.keys(data).length)
+            jsonSection.style.display = "block";
+
+        btn.disabled = false;
+        btn.textContent = "Recover";
+
+        updateCase1Status()
+    } catch (err) {
+        console.error("Error recovery:", err);
+    }
+}
+
+async function checkHealth() {
+    try {
+        const btns = document.querySelectorAll(".check-health");
+        btns.forEach(btn => {
+            btn.disabled = true;
+            btn.textContent = "Checking health...";
+        });
+
         const [healthResponse, recoveryResponse] = await Promise.all([
             fetch(`${API_BASE_URL}/health`),
             fetch(`${API_BASE_URL}/recovery/status`)
@@ -114,8 +312,50 @@ async function updateCase1Status() {
         
         const healthData = await healthResponse.json();
         const recoveryData = await recoveryResponse.json();
-        
+
+        const display_data = {
+            HEALTH: healthData,
+            RECOVERY: recoveryData
+        }
+
+        const jsonSection = document.getElementById("case1-json-response");
+        const jsonBox = document.getElementById("case1-json-content");
+
+        jsonBox.innerHTML = `<pre class="code-block" style="white-space: pre-wrap;">${syntaxHighlight(
+            display_data
+        )}</pre>`;
+        if (display_data && Object.keys(display_data).length)
+            jsonSection.style.display = "block";
+
+        btns.forEach(btn => {
+            btn.disabled = false;
+            btn.textContent = "Check Health";
+        });
+
+        updateCase1Status()
+    } catch (err) {
+        console.error("Error checking:", err);
+    }
+}
+
+async function updateCase1Status() {
+    try {
         const statusCards = document.querySelectorAll('#case-1 .status-value');
+        statusCards[0].textContent = "Loading status..."
+        statusCards[0].className = `status-value`;
+        statusCards[1].textContent = "Loading count..."
+
+        const [healthResponse, recoveryResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/health`),
+            fetch(`${API_BASE_URL}/recovery/status`)
+        ]);
+        
+        if (!healthResponse.ok || !recoveryResponse.ok) {
+            throw new Error('Failed to fetch status');
+        }
+        
+        const healthData = await healthResponse.json();
+        const recoveryData = await recoveryResponse.json();
         
         const node1_health_data = healthData.node1;
         if(node1_health_data){
@@ -138,6 +378,7 @@ async function updateCase1Status() {
     }
 }
 
+// ================================================
 
 // CASE 2
 const case2Form = document.getElementById('case-2-form');

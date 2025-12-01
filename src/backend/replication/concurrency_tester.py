@@ -545,27 +545,47 @@ class ConcurrencyTester:
                 'scenario': 'Case #1: Central node failure during replication',
                 'description': 'Fragment write succeeds, but central replication fails',
                 'steps': [
-                    '1. Stop node1: docker stop node1-central',
+                    '1. Stop node1 container:',
                     '2. Insert title via POST /title',
                     '3. Check queue: GET /recovery/status',
-                    '4. Restart node1: docker start node1-central',
+                    '4. Restart node1:',
                     '5. Recover: POST /test/failure/central-recovery'
+                ],
+                'codes': [
+                    'docker stop node1-central',
+                    'ssh root@ccscloud.dlsu.edu.ph -p 60457',
+                    'systemctl stop mysql',
+
+                    'docker start node1-central',
+                    'ssh root@ccscloud.dlsu.edu.ph -p 60457',
+                    'systemctl start mysql',
                 ],
                 'expected': 'Insert succeeds on fragment, queued for central',
                 'current_pending': self.replication_manager.recovery_handler.get_pending_count()
             }
+
             
         elif scenario == 'central_to_fragment':
             node_name = f'{node}-movies' if node == 'node2' else f'{node}-nonmovies'
+            port = f'60458' if node == 'node2' else f'60459'
             return {
                 'scenario': 'Case #3: Fragment node failure during replication',
                 'description': 'Central write succeeds (fallback), fragment replication queued',
                 'steps': [
-                    f'1. Stop {node} container: docker stop {node_name}',
+                    f'1. Stop {node} container:',
                     '2. Insert a movie via POST /title (will use central as fallback)',
                     '3. Check pending queue: GET /recovery/status',
-                    f'4. Restart {node}: docker start {node_name}',
+                    f'4. Restart {node}',
                     f'5. Trigger recovery: POST /test/failure/fragment-recovery with {{"node": "{node}"}}'
+                ],
+                'codes': [
+                    f'docker stop {node_name}',
+                    f'ssh root@ccscloud.dlsu.edu.ph -p {port}',
+                    'systemctl stop mysql',
+
+                    f'docker start {node_name}',
+                    f'ssh root@ccscloud.dlsu.edu.ph -p {port}',
+                    'systemctl start mysql',
                 ],
                 'expected': 'Insert succeeds on central, queued for fragment',
                 'current_pending': self.replication_manager.recovery_handler.get_pending_count()

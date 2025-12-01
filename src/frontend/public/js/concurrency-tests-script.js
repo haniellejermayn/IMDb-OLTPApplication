@@ -287,7 +287,7 @@ function buildWriterNodeCard(nodeName, writerIndex, version, result) {
         <div class="node-result node-writer" id="${nodeName}-writer">
           <h2>${nodeName} (Writer ${writerIndex})</h2>
 
-          <div class="results-content read-1-content" id="${nodeName}-writer-content">
+          <div class="results-content write-1-content" id="${nodeName}-writer-content">
                 <div class="top">
                     <div class="row info-row"><b>Genres:</b> ${data.data_written.genres}</div>
                     <div class="row info-row"><b>Runtime Minutes:</b> ${data.data_written.runtime_minutes} minutes</div>
@@ -433,7 +433,7 @@ document.getElementById("case-1-form").addEventListener("submit", async (e) => {
         explanationEl.textContent = result.analysis.explanation || "";
 
       let consistencyText = "";
-      if (result.analysis.final_state_consistent_across_nodes) {
+      if (result.consistent) {
         consistencyText = "Final states are consistent across all nodes.";
       } else {
         consistencyText = "Final states are not consistent across all nodes.";
@@ -711,6 +711,7 @@ document.getElementById("case-3-form").addEventListener("submit", async (e) => {
     finalValuesContainer.innerHTML = "";
 
     const finalValues = result.results.final_values;
+    document.getElementById("case3-node-results-container").style.display = "flex";
 
     let index = 1;
     for (let key in finalValues) {
@@ -746,6 +747,8 @@ document.getElementById("case-3-form").addEventListener("submit", async (e) => {
     if (result.analysis) {
       const consistencyEl = analysisContainer.querySelector(".consistency");
       const explanationEl = analysisContainer.querySelector(".explanation");
+
+      document.getElementById("c3-explanation").style.display = "flex";
 
       let consistencyText = "";
       if (result.analysis.final_state_consistent_across_nodes) {

@@ -178,7 +178,7 @@ async function handleCase1() {
         if (data && Object.keys(data).length)
             jsonSection.style.display = "block";
         
-        populateCase1Instructions(data.steps);
+        populateCase1Instructions(data.steps, data.codes);
         
         await updateCase1Status();
         
@@ -195,33 +195,51 @@ async function handleCase1() {
     }
 }
 
-function populateCase1Instructions(steps) {
+function populateCase1Instructions(steps, codes) {
     const container = document.querySelector('#case-1 .instructions-container');
     container.innerHTML = '';
 
     steps.forEach((step, index) => {
         const cleanStep = step.replace(/^\d+\.\s*/, '');
-        
         const parts = cleanStep.split(':');
         const description = parts[0].trim();
         let command = parts[1] ? parts[1].trim() : null;
-        
+
         let codeBlock = '';
         let extraButton = '';
 
-        if (index === 1) {
+        if (index === 0) {
+            codeBlock = `<div class="code-block">
+                        Local<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[0]}<br><br>
+                        Deployed<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[1]}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[2]}<br>
+                        </div>`;
+            extraButton = `<button class="check-health">Check Health</button>`;
+        } else if (index === 3) {
+            codeBlock = `<div class="code-block">
+                        Local<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[3]}<br><br>
+                        Deployed<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[4]}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[5]}<br>
+                        </div>`;
+            extraButton = `<button class="check-health">Check Health</button>`;
+        }
+        else if (index === 1) {
             codeBlock = renderInsertFields();
-        } else if (index === 2) {
+        } 
+        else if (index === 2) {
             codeBlock = `<div class="code-block">${command}</div>`;
             extraButton = `<button id="check-step-3">Check Recovery Status</button>`;
-        } else if (index === 4) {
-            codeBlock = `<div class="code-block">${command}</div>`;
+        } 
+        else if (index === 4) {
+            codeBlock = `<pre class="code-block">${command}</pre>`;
             extraButton = `<button id="recover-step-5">Go to Recovery (Case 2)</button>`;
-        } else if (index === 0 || index === 3) {
-            codeBlock = `<div class="code-block">${command}</div>`;
-            extraButton = `<button class="check-health">Check Health</button>`;
-        } else if (command !== null) {
-            codeBlock = `<div class="code-block">${command}</div>`;
+        } 
+        else {
+            codeBlock = command ? `<pre class="code-block">${command}</pre>` : '';
         }
 
         const stepHTML = `
@@ -233,26 +251,21 @@ function populateCase1Instructions(steps) {
                     ${extraButton}
                 </div>
             </div>
-            `;
-        
+        `;
         container.innerHTML += stepHTML;
     });
 
     const btn_check = document.getElementById("check-step-3");
-    if (btn_check) {
-        btn_check.addEventListener("click", () => checkStatus(1, null));
-    }
+    if (btn_check) btn_check.addEventListener("click", () => checkStatus(1, null));
 
     const btn_recover = document.getElementById("recover-step-5");
-    if (btn_recover) {
-        btn_recover.addEventListener("click", () => recover(1, null));
-    }
+    if (btn_recover) btn_recover.addEventListener("click", () => recover(1, null));
 
     document.body.addEventListener("click", (e) => {
         if (e.target.classList.contains("check-health")) {
             checkHealth(1, null);
         }
-    })
+    });
 
     const new_title_form = document.getElementById("title-form");
     if (new_title_form) {
@@ -264,15 +277,11 @@ function populateCase1Instructions(steps) {
                 title_type: document.getElementById("title_type").value.trim(),
                 primary_title: document.getElementById("primary_title").value.trim(),
                 start_year: parseInt(document.getElementById("start_year").value),
-                runtime_minutes: parseInt(
-                    document.getElementById("runtime_minutes").value
-            ),
+                runtime_minutes: parseInt(document.getElementById("runtime_minutes").value),
                 genres: document.getElementById("genres").value.trim(),
             };
 
-            console.log("Form data: ", formData);
-
-            insertNewTitle(formData, 1, null)
+            insertNewTitle(formData, 1, null);
         });
     }
 }
@@ -622,7 +631,7 @@ async function handleCase3() {
         if (data && Object.keys(data).length)
             jsonSection.style.display = "block";
         
-        populateCase3Instructions(data.steps, selectedNode);
+        populateCase3Instructions(data.steps, selectedNode, data.codes);
         
         await updateCase3Status(selectedNode);
         
@@ -639,7 +648,7 @@ async function handleCase3() {
     }
 }
 
-function populateCase3Instructions(steps, selected_node) {
+function populateCase3Instructions(steps, selected_node, codes) {
     const container = document.querySelector('#case-3 .instructions-container');
     container.innerHTML = '';
     
@@ -669,8 +678,23 @@ function populateCase3Instructions(steps, selected_node) {
         } else if (index === 4) {
             codeBlock = `<div class="code-block">${command}</div>`;
             extraButton = `<button id="recover-step-5">Go to Recovery (Case 4)</button>`;
-        } else if (index === 0 || index === 3) {
-            codeBlock = `<div class="code-block">${command}</div>`;
+        } else if (index === 0) {
+            codeBlock = `<div class="code-block">
+                        Local<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[0]}<br><br>
+                        Deployed<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[1]}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[2]}<br>
+                        </div>`;
+            extraButton = `<button class="check-health">Check Health</button>`;
+        } else if (index === 3) {
+            codeBlock = `<div class="code-block">
+                        Local<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[3]}<br><br>
+                        Deployed<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[4]}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;${codes[5]}<br>
+                        </div>`;
             extraButton = `<button class="check-health">Check Health</button>`;
         } else if (command !== null) {
             codeBlock = `<div class="code-block">${command}</div>`;

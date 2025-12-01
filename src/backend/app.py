@@ -225,7 +225,7 @@ def test_failure_case1():
     Test Case #1: Fragment write succeeds, but central replication fails
     Instructions returned on how to simulate this
     """
-    result = replication_manager.simulate_failure('fragment_to_central')
+    result = replication_manager.simulate_failure('fragment_to_central', node=None)
     return jsonify(clean_result(result))
 
 @app.route('/test/failure/central-recovery', methods=['POST'])
@@ -242,7 +242,10 @@ def test_failure_case3():
     Test Case #3: Central write succeeds (fallback), but fragment replication fails
     Instructions returned on how to simulate this
     """
-    result = replication_manager.simulate_failure('central_to_fragment')
+    data = request.get_json(silent=True) or {}
+    node = data.get("node")
+
+    result = replication_manager.simulate_failure('central_to_fragment', node=node)
     return jsonify(clean_result(result))
 
 @app.route('/test/failure/fragment-recovery', methods=['POST'])

@@ -538,8 +538,8 @@ class ConcurrencyTester:
         
         return ' | '.join(parts)
     
-    def simulate_failure(self, scenario):
-        """Guide for simulating failure scenarios"""
+    def simulate_failure(self, scenario, node):
+        """Guide for simulating failure scenarios (for Step 4 - Recovery)"""
         if scenario == 'fragment_to_central':
             return {
                 'scenario': 'Case #1: Central node failure during replication',
@@ -556,15 +556,16 @@ class ConcurrencyTester:
             }
             
         elif scenario == 'central_to_fragment':
+            node_name = f'{node}-movies' if node == 'node2' else f'{node}-nonmovies'
             return {
                 'scenario': 'Case #3: Fragment node failure during replication',
                 'description': 'Central write succeeds (fallback), fragment replication queued',
                 'steps': [
-                    '1. Stop node2: docker stop node2-movies',
-                    '2. Insert movie via POST /title',
-                    '3. Check queue: GET /recovery/status',
-                    '4. Restart node2: docker start node2-movies',
-                    '5. Recover: POST /test/failure/fragment-recovery'
+                    f'1. Stop {node} container: docker stop {node_name}',
+                    '2. Insert a movie via POST /title (will use central as fallback)',
+                    '3. Check pending queue: GET /recovery/status',
+                    f'4. Restart {node}: docker start {node_name}',
+                    f'5. Trigger recovery: POST /test/failure/fragment-recovery with {{"node": "{node}"}}'
                 ],
                 'expected': 'Insert succeeds on central, queued for fragment',
                 'current_pending': self.replication_manager.recovery_handler.get_pending_count()

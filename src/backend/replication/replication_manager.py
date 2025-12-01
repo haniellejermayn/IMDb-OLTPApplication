@@ -675,5 +675,5 @@ class ReplicationManager:
     def test_read_write_conflict(self, tconst, new_data, isolation_level='READ COMMITTED'):
         return self.concurrency_tester.test_read_write_conflict(tconst, new_data, isolation_level)
     
-    def simulate_failure(self, scenario):
-        return self.concurrency_tester.simulate_failure(scenario)
+    def simulate_failure(self, scenario, node):
+        return self.concurrency_tester.simulate_failure(scenario, node)

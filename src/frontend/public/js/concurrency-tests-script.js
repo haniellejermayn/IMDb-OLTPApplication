@@ -300,10 +300,10 @@ function buildWriterNodeCard(nodeName, writerIndex, version, result) {
                   <div class="row info-row">
                     <div><b>Duration:</b> ${data.duration}s</div>
                   </div>
-                  <div class="row info-row">
+                  <!-->div class="row info-row">
                     <div><b>Rows Affected:</b> ${data.rows_affected}</div>
                     <div></div>
-                  </div>
+                  </div>-->
                   <div class="row status-row">
                     <div class="write-status ${statusClass}">${data.success ? "Successful Write" : "Unsuccessful Write"}</div>
                     <div class="timestamp">Written at ${formatDate(data.timestamp)}</div>

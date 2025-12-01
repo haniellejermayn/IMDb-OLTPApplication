@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateTitleCount(nodeId, count) {
         const statusElems = document.querySelector(`#${nodeId} .title-count`);
-        statusElems.textContent = count;
+        statusElems.textContent = `${count} records`;
     }
 
     function capitalize(s) {

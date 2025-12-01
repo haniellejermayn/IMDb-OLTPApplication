@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 from db_manager import DatabaseManager
 from replication.replication_manager import ReplicationManager
@@ -15,16 +15,18 @@ def running_in_docker():
     except Exception:
         return False
 
-IN_DOCKER = running_in_docker()  # define first
+IN_DOCKER = running_in_docker()
 
+# ---------- Paths ----------
 if IN_DOCKER:
     TEMPLATE_FOLDER = "/app/templates"
     STATIC_FOLDER = "/app/public"
 else:
     BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../frontend")
-    TEMPLATE_FOLDER = os.path.join(BASE_DIR, "pages")
-    STATIC_FOLDER = os.path.join(BASE_DIR, "public")
+    TEMPLATE_FOLDER = os.path.join(BASE_DIR, "pages")    # Jinja templates
+    STATIC_FOLDER = os.path.join(BASE_DIR, "public")     # CSS/JS/fonts
 
+# ---------- Flask App ----------
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER, static_folder=STATIC_FOLDER)
 CORS(app)
 logging.basicConfig(level=logging.INFO)
@@ -36,18 +38,35 @@ replication_manager = ReplicationManager(db_manager)
 replication_manager.recovery_handler.start_automatic_retry()
 logger.info("Application started with automatic replication retry enabled")
 
-# Serve frontend when not in Docker
+# ---------- Jinja Routes (Non-Docker Only) ----------
 if not IN_DOCKER:
-    BASE_DIR = TEMPLATE_FOLDER  # frontend folder
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("dashboard.html")
 
-    @app.route("/", defaults={"path": "index.html"})
-    @app.route("/<path:path>")
-    def serve_frontend(path):
-        full_path = os.path.join(BASE_DIR, path)
-        if os.path.isfile(full_path):
-            return send_from_directory(BASE_DIR, path)
-        # Fallback to index.html for SPA routing
-        return send_from_directory(BASE_DIR, "index.html")
+    @app.route("/transaction-logs")
+    def transaction_logs():
+        return render_template("transaction-logs.html")
+
+    @app.route("/create")
+    def create():
+        return render_template("create-title.html")
+
+    @app.route("/browse")
+    def browse():
+        return render_template("title-browser.html")
+
+    @app.route("/edit/<tconst>")
+    def edit(tconst):
+        return render_template("create-title.html", tconst=tconst)
+
+    @app.route("/recovery-tests")
+    def recovery_tests():
+        return render_template("recovery-tests.html")
+
+    @app.route("/concurrency")
+    def concurrency():
+        return render_template("concurrency-tests.html")
 
 # Initial fragment sync if flag is set
 from initialize_data import initialize_fragments_from_central
@@ -370,6 +389,22 @@ def test_isolation_levels():
 
 from route import register_routes
 register_routes(app)
+
+# ---------- SPA / Fallback (Non-Docker Only) ----------
+if not IN_DOCKER:
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_frontend(path):
+        """Serve frontend files with SPA fallback to index.html"""
+        if path == "":
+            path = "index.html"
+        
+        full_path = os.path.join(BASE_DIR, path)
+        if path and os.path.isfile(full_path):
+            return send_from_directory(BASE_DIR, path)
+        
+        # Fallback to index.html for SPA routing
+        return send_from_directory(BASE_DIR, "index.html")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from db_manager import DatabaseManager
 from replication.replication_manager import ReplicationManager
@@ -37,36 +37,6 @@ replication_manager = ReplicationManager(db_manager)
 
 replication_manager.recovery_handler.start_automatic_retry()
 logger.info("Application started with automatic replication retry enabled")
-
-# ---------- Jinja Routes (Non-Docker Only) ----------
-if not IN_DOCKER:
-    @app.route("/dashboard")
-    def dashboard():
-        return render_template("dashboard.html")
-
-    @app.route("/transaction-logs")
-    def transaction_logs():
-        return render_template("transaction-logs.html")
-
-    @app.route("/create")
-    def create():
-        return render_template("create-title.html")
-
-    @app.route("/browse")
-    def browse():
-        return render_template("title-browser.html")
-
-    @app.route("/edit/<tconst>")
-    def edit(tconst):
-        return render_template("create-title.html", tconst=tconst)
-
-    @app.route("/recovery-tests")
-    def recovery_tests():
-        return render_template("recovery-tests.html")
-
-    @app.route("/concurrency")
-    def concurrency():
-        return render_template("concurrency-tests.html")
 
 # Initial fragment sync if flag is set
 from initialize_data import initialize_fragments_from_central
@@ -387,18 +357,15 @@ def test_isolation_levels():
         'results': clean_result(results)
     })
 
+# ==================== REGISTER TEMPLATE ROUTES ====================
 from route import register_routes
 register_routes(app)
 
 # ---------- SPA / Fallback (Non-Docker Only) ----------
 if not IN_DOCKER:
-    @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def serve_frontend(path):
         """Serve frontend files with SPA fallback to index.html"""
-        if path == "":
-            path = "index.html"
-        
         full_path = os.path.join(BASE_DIR, path)
         if path and os.path.isfile(full_path):
             return send_from_directory(BASE_DIR, path)
